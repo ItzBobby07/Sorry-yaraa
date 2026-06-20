@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For My Yarra ❤️</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#ffb6d9,#ffd6eb);
+    min-height:100vh;
+    overflow:hidden;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.hearts{
+    position:fixed;
+    width:100%;
+    height:100%;
+    top:0;
+    left:0;
+    overflow:hidden;
+    pointer-events:none;
+}
+
+.heart{
+    position:absolute;
+    color:#ff3d8b;
+    animation:float 10s linear infinite;
+    opacity:.7;
+}
+
+@keyframes float{
+    from{
+        transform:translateY(100vh) rotate(0deg);
+    }
+    to{
+        transform:translateY(-120px) rotate(360deg);
+    }
+}
+
+.card{
+    width:100%;
+    max-width:750px;
+    background:rgba(255,255,255,.95);
+    border-radius:25px;
+    padding:30px;
+    text-align:center;
+    box-shadow:0 10px 40px rgba(0,0,0,.15);
+    animation:fade .5s ease;
+    position:relative;
+}
+
+@keyframes fade{
+    from{opacity:0;transform:translateY(20px);}
+    to{opacity:1;transform:translateY(0);}
+}
+
+h2{
+    color:#ff2e79;
+    margin-bottom:25px;
+    line-height:1.8;
+    font-size:1.2rem;
+}
+
+img{
+    width:100%;
+    max-height:320px;
+    object-fit:cover;
+    border-radius:18px;
+    margin-bottom:20px;
+}
+
+.btns{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:15px;
+    margin-top:20px;
+}
+
+button{
+    border:none;
+    padding:14px 24px;
+    border-radius:50px;
+    cursor:pointer;
+    font-size:1rem;
+    font-weight:600;
+    transition:.3s;
+}
+
+.yes{
+    background:#ff4f9a;
+    color:white;
+}
+
+.yes:hover{
+    transform:scale(1.05);
+}
+
+.no{
+    background:#ffe3f0;
+    color:#ff2e79;
+    position:relative;
+}
+
+.final-message{
+    color:#ff2e79;
+    font-size:1.25rem;
+    line-height:2;
+    font-weight:600;
+}
+
+.hidden{
+    display:none;
+}
+
+#confetti{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+}
+
+@media(max-width:600px){
+    h2{
+        font-size:1rem;
+    }
+
+    button{
+        width:100%;
+    }
+
+    .btns{
+        flex-direction:column;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="hearts" id="hearts"></div>
+<canvas id="confetti"></canvas>
+
+<div class="card" id="card"></div>
+
+<script>
+
+const questions = [
+{
+text:`I am sorry yarra 🫂🥺 main janne anjanne main tujhee bohott dukhh dee detta hnu lekin pyaar tho beeintahaan hain tujhsee 💕 kuch puchuun`,
+buttons:[
+{label:"Puch yarra 💕",next:true},
+{label:"Nahi",run:true}
+]
+},
+
+{
+text:`Main jaan nahi payya subhaa lekin yarra tu merii hain 🥺🫂 tujheee humeshaa meriii ranni jese rakungaa 💕🫂 tu rahegii na 🥺`,
+buttons:[
+{label:"Main rahungii pakka 💕",next:true},
+{label:"Na",run:true}
+]
+},
+
+{
+image:"q3.jpg",
+text:`Humeshaaa zindagiii main teriii caree karta rahungaa 🫂💕😋 tujhee kabhii akelaa mehsuus nahi honne dungaa yarra promise 🫂🥺💕 ek chizz chahiyee manguu ?`,
+buttons:[
+{label:"Mang na 💕",next:true},
+{label:"Naa aabhi nahi",run:true}
+]
+},
+
+{
+image:"q4.jpg",
+text:`Sun mujhe pata hain bohot dukhh diaa tujhee mainee 🥺 naa chahatee hue bhi bohot hurt kia tujhee 🥺 magar wadaa hain merra tujhee kabhi bhi dukhh nahi dungaa kabhi nahii kabhi bhi nahi 🥺💕💕💕 humeshaa tera saath nibhaungaa 🥺🫂`,
+buttons:[
+{label:"Main bhi nibhaungii humehsa 💕",next:true},
+{label:"Nahi",run:true}
+]
+},
+
+{
+image:"q5.jpg",
+text:`Yarra kya mujhee meraa pyaar wapiss dee degii 🥺 mujhee merii yarra chahiyee 🥺🫂💕 I loveee youuu yara 💕🥺🫂💝💖`,
+buttons:[
+{label:"I loveee youu soo much yarra 💖",next:true},
+{label:"I loveee youuu yarraaaaaa 😁",next:true}
+]
+}
+];
+
+let current=0;
+const card=document.getElementById("card");
+
+function renderQuestion(){
+
+if(current>=questions.length){
+showFinal();
+return;
+}
+
+const q=questions[current];
+
+card.innerHTML=`
+${q.image?`<img src="${q.image}" alt="">`:''}
+<h2>${q.text}</h2>
+<div class="btns">
+${q.buttons.map((btn,i)=>`
+<button class="${btn.run?'no':'yes'}" id="btn${i}">
+${btn.label}
+</button>
+`).join('')}
+</div>
+`;
+
+q.buttons.forEach((btn,i)=>{
+const el=document.getElementById(`btn${i}`);
+
+if(btn.run){
+el.addEventListener('mouseover',()=>moveButton(el));
+el.addEventListener('touchstart',()=>moveButton(el));
+}else{
+el.addEventListener('click',()=>{
+current++;
+renderQuestion();
+});
+}
+});
+}
+
+function moveButton(btn){
+const x=Math.random()*(window.innerWidth-150);
+const y=Math.random()*(window.innerHeight-80);
+
+btn.style.position='fixed';
+btn.style.left=x+'px';
+btn.style.top=y+'px';
+}
+
+function showFinal(){
+
+startConfetti();
+
+card.innerHTML=`
+<img src="final.jpg" alt="">
+<div class="final-message">
+Chahee kuch bhi hoo jayee humee saath rehna hain humeshaa 🫂<br><br>
+saath janaa hain yahaa ek saath yaad rakhnaa yarra Bobby kabhi tujhee dukhii nahi karegga promise 🫂💝<br><br>
+I loveeee youuuu yarrraaaaaaa 🫂💝😁💖
+</div>
+`;
+}
+
+renderQuestion();
+
+function createHeart(){
+const heart=document.createElement('div');
+heart.classList.add('heart');
+heart.innerHTML=['❤️','💕','💖','💝'][Math.floor(Math.random()*4)];
+heart.style.left=Math.random()*100+'vw';
+heart.style.fontSize=(20+Math.random()*30)+'px';
+heart.style.animationDuration=(6+Math.random()*6)+'s';
+
+document.getElementById('hearts').appendChild(heart);
+
+setTimeout(()=>heart.remove(),12000);
+}
+
+setInterval(createHeart,350);
+
+const canvas=document.getElementById("confetti");
+const ctx=canvas.getContext("2d");
+
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let pieces=[];
+
+function startConfetti(){
+for(let i=0;i<200;i++){
+pieces.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height-canvas.height,
+r:Math.random()*6+3,
+d:Math.random()*200
+});
+}
+animateConfetti();
+}
+
+function animateConfetti(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+for(let i=0;i<pieces.length;i++){
+let p=pieces[i];
+
+ctx.beginPath();
+ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+ctx.fillStyle=`hsl(${Math.random()*360},100%,70%)`;
+ctx.fill();
+
+p.y+=2;
+p.x+=Math.sin(p.d);
+
+if(p.y>canvas.height){
+p.y=-10;
+}
+}
+
+requestAnimationFrame(animateConfetti);
+}
+
+window.addEventListener('resize',()=>{
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+});
+</script>
+
+</body>
+</html>
